@@ -19,7 +19,7 @@
         }
         table {
             width: 100%;
-            max-width: 360px;
+            max-width: 290px; /* Horizontaal compacter gemaakt (was 360px) */
             border-collapse: collapse;
             background-color: #2c2c2e;
             border-radius: 12px;
@@ -27,7 +27,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
         td {
-            padding: 10px 14px;
+            padding: 8px 12px; /* Iets minder padding voor een compactere look */
             text-align: left;
             font-size: 0.85rem;
             border-bottom: 1px solid #3a3a3c;
@@ -38,20 +38,28 @@
         .label {
             color: #eaeaea;
             font-weight: 500;
+            white-space: nowrap; /* Zorgt dat labels op 1 regel blijven */
         }
         .waarde {
             color: #ffffff;
             text-align: right;
             font-weight: bold;
             font-variant-numeric: tabular-nums;
+            white-space: nowrap;
         }
         .highlight {
-            color: #30d158; /* Groen voor de actuele stand */
-            font-size: 0.95rem;
+            color: #30d158; /* iOS Systeemgroen behouden */
         }
         .countdown {
             color: #ff9f0a; /* Oranje voor de resterende tijden */
             font-size: 0.8rem;
+        }
+        /* Maakt het 'kr' symbool kleiner */
+        .valuta-symbool {
+            font-size: 0.7rem;
+            font-weight: normal;
+            margin-left: 2px;
+            color: #aaaaaa;
         }
     </style>
 </head>
@@ -109,7 +117,10 @@
         const START_UNIX_MS = 1769551200000; // 27 jan 2026 23:00:00 CET
 
         // CONSTANTEN VOOR TIJDSBEREKENING
-        const MS_PER_DAG = 24 * 60 * 60 * 1000;
+        const MS_PER_SEC = 1000;
+        const MS_PER_MIN = 60 * MS_PER_SEC;
+        const MS_PER_UUR = 60 * MS_PER_MIN;
+        const MS_PER_DAG = 24 * MS_PER_UUR;
         const MS_PER_MAAND = 30.4375 * MS_PER_DAG;
         const MS_PER_JAAR = 365.25 * MS_PER_DAG;
         const AFNAME_PER_MS = AFNAME_PER_MAAND / MS_PER_MAAND;
@@ -123,16 +134,17 @@
             return new Date(cetTekst).getTime();
         }
 
+        // Formatteert getallen op z'n Nederlands, met een kleine 'kr' erachter
         function formatValuta(bedrag) {
             if (bedrag < 0) bedrag = 0;
-            return bedrag.toLocaleString('sv-SE', { 
-                style: 'currency', 
-                currency: 'SEK', 
+            const geformatteerdGetal = bedrag.toLocaleString('nl-NL', { 
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2 
             });
+            return `${geformatteerdGetal}<span class="valuta-symbool">kr</span>`;
         }
 
+        // Berekent de resterende tijd inclusief minuten en seconden
         function berekenTijdResterend(doelBedrag, actueelBedrag) {
             if (actueelBedrag <= doelBedrag) return "Bereikt";
             
@@ -150,12 +162,21 @@
             const dagen = Math.floor(overgeblevenMs / MS_PER_DAG);
             overgeblevenMs %= MS_PER_DAG;
             
-            const uren = Math.floor(overgeblevenMs / (60 * 60 * 1000));
+            const uren = Math.floor(overgeblevenMs / MS_PER_UUR);
+            overgeblevenMs %= MS_PER_UUR;
+
+            const minuten = Math.floor(overgeblevenMs / MS_PER_MIN);
+            overgeblevenMs %= MS_PER_MIN;
+
+            const seconden = Math.floor(overgeblevenMs / MS_PER_SEC);
             
             let output = [];
             if (jaren > 0) output.push(`${jaren}j`);
             if (maanden > 0 || jaren > 0) output.push(`${maanden}m`);
-            output.push(`${dagen}d ${uren}u`);
+            if (dagen > 0 || maanden > 0 || jaren > 0) output.push(`${dagen}d`);
+            
+            // Uren, minuten en seconden tonen we altijd als actieve live-ticker
+            output.push(`${uren}u ${minuten}m ${seconden}s`);
             
             return output.join(" ");
         }
@@ -167,7 +188,7 @@
             // 1. NU stand berekenen
             let actueelBedrag = START_BEDRAG - (verstrekenMs * AFNAME_PER_MS);
             if (actueelBedrag < 0) actueelBedrag = 0;
-            document.getElementById('nu').innerText = formatValuta(actueelBedrag);
+            document.getElementById('nu').innerHTML = formatValuta(actueelBedrag);
             
             // 2. Toekomstige vaste schattingen
             let schuldHalfJaar = actueelBedrag - ((MS_PER_JAAR / 2) * AFNAME_PER_MS);
@@ -176,12 +197,11 @@
             const verstrekenMsDec2026 = DEC_2026_UNIX_MS - START_UNIX_MS;
             let schuldDec2026 = START_BEDRAG - (verstrekenMsDec2026 * AFNAME_PER_MS);
             
-            document.getElementById('half-jaar').innerText = formatValuta(schuldHalfJaar);
-            document.getElementById('jaar').innerText = formatValuta(schuldJaar);
-            document.getElementById('dec-2026').innerText = formatValuta(schuldDec2026);
+            document.getElementById('half-jaar').innerHTML = formatValuta(schuldHalfJaar);
+            document.getElementById('jaar').innerHTML = formatValuta(schuldJaar);
+            document.getElementById('dec-2026').innerHTML = formatValuta(schuldDec2026);
             
             // 3. Resterende tijd naar milestones berekenen
-            // Volgende afgeronde doelen (Next 5K, 10K, 100K)
             let volgend5kDoel = Math.floor(actueelBedrag / 5000) * 5000;
             if (volgend5kDoel === actueelBedrag) volgend5kDoel -= 5000;
             
