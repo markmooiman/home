@@ -12,7 +12,7 @@ await webView.loadURL(WEB_PAGINA_URL)
 // Wacht 800ms zodat de JavaScript op GitHub de actuele stand heeft berekend
 await new Promise(r => Timer.schedule(800, false, r))
 
-// 2. SCRAPING: Haal alle labels en waarden op uit de tabel-structuur
+// 2. SCRAPING: Haal alle labels en waarden netjes op uit de tabel-structuur
 let scrapeScript = `
   let data = [];
   let rijen = document.querySelectorAll("table tbody tr");
@@ -42,8 +42,8 @@ gradient.colors = [
 gradient.locations = [0.0, 1.0]
 widget.backgroundGradient = gradient
 
-// Strakke marges om de waarden en de fysieke knop perfect te balanceren
-widget.setPadding(10, 12, 10, 12)
+// Perfect gebalanceerde marges voor de pure waarden
+widget.setPadding(14, 14, 14, 14)
 
 if (tabelData.length === 0) {
   let foutTekst = widget.addText("Geen data")
@@ -83,7 +83,7 @@ if (tabelData.length === 0) {
       let isLetter = /[a-zA-Z]/.test(deel);
       
       if (isLetter) {
-        if (deel.toLowerCase() === "kr") return; // Verberg 'kr'
+        if (deel.toLowerCase() === "kr") return; // Verberg 'kr' volledig
         
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
@@ -97,39 +97,21 @@ if (tabelData.length === 0) {
       } else {
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
-        tekstElement.fontSize = 11.5 
+        tekstElement.fontSize = 12.5 
         tekstElement.fontWeight = "bold"
         tekstElement.textColor = tekstKleur
       }
     })
     
     if (sIdx < rowsToInclude.length - 1) {
-      widget.addSpacer(4)
+      widget.addSpacer(5)
     }
   })
 }
 
-widget.addSpacer(6) // Ruimte tussen de waarden en de verversknop
-
-// 4. DE COMPACTE VERVERS KNOP (Alleen het icoon, gecentreerd onderin)
-let knopStack = widget.addStack()
-knopStack.layoutHorizontally()
-knopStack.addSpacer() // Duwt de knop naar het midden
-
-let refreshKnop = knopStack.addStack()
-refreshKnop.backgroundColor = new Color("#2c2c2e") // Iets lichtere knop achtergrond
-refreshKnop.setPadding(4, 12, 4, 12) // Voldoende klikoppervlak rondom het icoon
-refreshKnop.cornerRadius = 6
-
-// GEVRAAGD: Alleen het icoon behouden, tekst is verwijderd
-let knopIcoon = refreshKnop.addText("🔄")
-knopIcoon.fontSize = 11
-
-// Koppel de ververs actie aan de hand van je scriptnaam
+// 4. DE GLOBALE VERVERS ACTIE: Gekoppeld aan de GEHELE widget achtergrond
 let encodedNaam = encodeURIComponent(SCRIPT_NAAM)
-refreshKnop.url = "scriptable:///run/" + encodedNaam
-
-knopStack.addSpacer() // Sluit centrering af
+widget.url = "scriptable:///run/" + encodedNaam
 
 // 5. AFHANDELING EN WEERGAVE
 if (config.runsInWidget) {
