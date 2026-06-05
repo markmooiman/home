@@ -3,66 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypotheek Live Tracker</title>
+    <title>Hypotheek Dashboard</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #1c1c1e; /* iOS Dark Mode achtergrond */
+            background-color: #1c1c1e;
             color: #ffffff;
             margin: 0;
             padding: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             box-sizing: border-box;
         }
         table {
             width: 100%;
-            max-width: 320px;
+            max-width: 360px;
             border-collapse: collapse;
             background-color: #2c2c2e;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
-        th, td {
-            padding: 14px 16px;
+        td {
+            padding: 10px 14px;
             text-align: left;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #3a3a3c;
         }
-        th {
-            background-color: #3a3a3c;
-            color: #0a84ff; /* iOS Systeemblauw */
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
+        tr:last-child td {
+            border-bottom: none;
         }
         .label {
             color: #eaeaea;
             font-weight: 500;
         }
         .waarde {
-            color: #ffffff; /* Wit zoals gespecificeerd in jouw configuratie */
+            color: #ffffff;
             text-align: right;
             font-weight: bold;
-            font-variant-numeric: tabular-nums; /* Voorkomt dat cijfers verspringen bij updates */
+            font-variant-numeric: tabular-nums;
+        }
+        .highlight {
+            color: #30d158; /* Groen voor de actuele stand */
+            font-size: 0.95rem;
+        }
+        .countdown {
+            color: #ff9f0a; /* Oranje voor de resterende tijden */
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
 
     <table>
-        <thead>
-            <tr>
-                <th colspan="2">Hypotheek Status</th>
-            </tr>
-        </thead>
         <tbody>
             <tr>
-                <td class="label">🏠 Actuele Hypotheek</td>
-                <td id="hypotheek-bedrag" class="waarde">Laden...</td>
+                <td class="label">Nu</td>
+                <td id="nu" class="waarde highlight">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Half Jaar</td>
+                <td id="half-jaar" class="waarde">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Jaar</td>
+                <td id="jaar" class="waarde">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">28 December 2026</td>
+                <td id="dec-2026" class="waarde">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Next 5K</td>
+                <td id="next-5k" class="waarde countdown">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Next 10K</td>
+                <td id="next-10k" class="waarde countdown">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Next 100K</td>
+                <td id="next-100k" class="waarde countdown">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Tot 1M</td>
+                <td id="tot-1m" class="waarde countdown">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Tot 500K</td>
+                <td id="tot-500k" class="waarde countdown">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Tot 0</td>
+                <td id="tot-0" class="waarde countdown">Laden...</td>
             </tr>
         </tbody>
     </table>
@@ -71,36 +106,26 @@
         // CONFIGURATIE (Strict CET)
         const START_BEDRAG = 1258000; 
         const AFNAME_PER_MAAND = 15000;
+        const START_UNIX_MS = 1769551200000; // 27 jan 2026 23:00:00 CET
 
-        // De exacte absolute Unix-tijdstempel voor 27 jan 2026 23:00:00 CET
-        const START_UNIX_MS = 1769551200000; 
-
-        // BEREKENING TEMPO (op basis van gemiddeld 30,4375 dagen per maand)
-        const MS_PER_MAAND = 30.4375 * 24 * 60 * 60 * 1000;
+        // CONSTANTEN VOOR TIJDSBEREKENING
+        const MS_PER_DAG = 24 * 60 * 60 * 1000;
+        const MS_PER_MAAND = 30.4375 * MS_PER_DAG;
+        const MS_PER_JAAR = 365.25 * MS_PER_DAG;
         const AFNAME_PER_MS = AFNAME_PER_MAAND / MS_PER_MAAND;
 
-        const displayBedrag = document.getElementById('hypotheek-bedrag');
+        // Vaste datum voor 28 December 2026 23:00:00 CET
+        const DEC_2026_UNIX_MS = new Date("2026-12-28T23:00:00+01:00").getTime();
 
-        // Functie die de huidige tijd van de iPhone dwingt naar de CET/CEST tijdzone
         function getHuidigeTijdInCetMs() {
             const nu = new Date();
             const cetTekst = nu.toLocaleString("en-US", { timeZone: "Europe/Stockholm" });
             return new Date(cetTekst).getTime();
         }
 
-        // De live ticker (update elke 10 milliseconden)
-        function berekenEnToonHypotheek() {
-            const nuCetMs = getHuidigeTijdInCetMs(); 
-            
-            // Bereken het absolute verschil in milliseconden
-            const verstrekenMs = nuCetMs - START_UNIX_MS;
-            
-            // Bereken de exacte actuele stand van de hypotheek
-            let actueelBedrag = START_BEDRAG - (verstrekenMs * AFNAME_PER_MS);
-            if (actueelBedrag < 0) actueelBedrag = 0;
-            
-            // Toon het bedrag als Zweedse Kronen (kr) met 2 decimalen
-            displayBedrag.innerText = actueelBedrag.toLocaleString('sv-SE', { 
+        function formatValuta(bedrag) {
+            if (bedrag < 0) bedrag = 0;
+            return bedrag.toLocaleString('sv-SE', { 
                 style: 'currency', 
                 currency: 'SEK', 
                 minimumFractionDigits: 2, 
@@ -108,11 +133,77 @@
             });
         }
 
-        // Voer direct eenmalig uit bij het laden van de pagina
-        berekenEnToonHypotheek();
+        function berekenTijdResterend(doelBedrag, actueelBedrag) {
+            if (actueelBedrag <= doelBedrag) return "Bereikt";
+            
+            const benodigdBedragAflossen = actueelBedrag - doelBedrag;
+            const benodigdeMs = benodigdBedragAflossen / AFNAME_PER_MS;
+            
+            let overgeblevenMs = benodigdeMs;
+            
+            const jaren = Math.floor(overgeblevenMs / MS_PER_JAAR);
+            overgeblevenMs %= MS_PER_JAAR;
+            
+            const maanden = Math.floor(overgeblevenMs / MS_PER_MAAND);
+            overgeblevenMs %= MS_PER_MAAND;
+            
+            const dagen = Math.floor(overgeblevenMs / MS_PER_DAG);
+            overgeblevenMs %= MS_PER_DAG;
+            
+            const uren = Math.floor(overgeblevenMs / (60 * 60 * 1000));
+            
+            let output = [];
+            if (jaren > 0) output.push(`${jaren}j`);
+            if (maanden > 0 || jaren > 0) output.push(`${maanden}m`);
+            output.push(`${dagen}d ${uren}u`);
+            
+            return output.join(" ");
+        }
 
-        // Start de snelle interval van 10ms voor vloeiende live weergave in de browser
-        setInterval(berekenEnToonHypotheek, 10);
+        function updateDashboard() {
+            const nuCetMs = getHuidigeTijdInCetMs(); 
+            const verstrekenMs = nuCetMs - START_UNIX_MS;
+            
+            // 1. NU stand berekenen
+            let actueelBedrag = START_BEDRAG - (verstrekenMs * AFNAME_PER_MS);
+            if (actueelBedrag < 0) actueelBedrag = 0;
+            document.getElementById('nu').innerText = formatValuta(actueelBedrag);
+            
+            // 2. Toekomstige vaste schattingen
+            let schuldHalfJaar = actueelBedrag - ((MS_PER_JAAR / 2) * AFNAME_PER_MS);
+            let schuldJaar = actueelBedrag - (MS_PER_JAAR * AFNAME_PER_MS);
+            
+            const verstrekenMsDec2026 = DEC_2026_UNIX_MS - START_UNIX_MS;
+            let schuldDec2026 = START_BEDRAG - (verstrekenMsDec2026 * AFNAME_PER_MS);
+            
+            document.getElementById('half-jaar').innerText = formatValuta(schuldHalfJaar);
+            document.getElementById('jaar').innerText = formatValuta(schuldJaar);
+            document.getElementById('dec-2026').innerText = formatValuta(schuldDec2026);
+            
+            // 3. Resterende tijd naar milestones berekenen
+            // Volgende afgeronde doelen (Next 5K, 10K, 100K)
+            let volgend5kDoel = Math.floor(actueelBedrag / 5000) * 5000;
+            if (volgend5kDoel === actueelBedrag) volgend5kDoel -= 5000;
+            
+            let volgend10kDoel = Math.floor(actueelBedrag / 10000) * 10000;
+            if (volgend10kDoel === actueelBedrag) volgend10kDoel -= 10000;
+            
+            let volgend100kDoel = Math.floor(actueelBedrag / 100000) * 100000;
+            if (volgend100kDoel === actueelBedrag) volgend100kDoel -= 100000;
+            
+            document.getElementById('next-5k').innerText = berekenTijdResterend(volgend5kDoel, actueelBedrag);
+            document.getElementById('next-10k').innerText = berekenTijdResterend(volgend10kDoel, actueelBedrag);
+            document.getElementById('next-100k').innerText = berekenTijdResterend(volgend100kDoel, actueelBedrag);
+            
+            // Vaste milestones
+            document.getElementById('tot-1m').innerText = berekenTijdResterend(1000000, actueelBedrag);
+            document.getElementById('tot-500k').innerText = berekenTijdResterend(500000, actueelBedrag);
+            document.getElementById('tot-0').innerText = berekenTijdResterend(0, actueelBedrag);
+        }
+
+        // Direct laden en elke seconde herhalen
+        updateDashboard();
+        setInterval(updateDashboard, 1000);
     </script>
 
 </body>
