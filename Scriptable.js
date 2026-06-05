@@ -74,27 +74,23 @@ if (tabelData.length === 0) {
     // Bepaal de hoofdkleur van de tekst (Rij 0 = groen, de rest is grijs)
     let tekstKleur = (index === 0) ? new Color("#30d158") : new Color("#8e8e93");
     
-    // De RegEx matcht zowel kleine letters als hoofdletters (a-zA-Z) om ook 'Kr' of 'kr' te herkennen
+    // De RegEx matcht zowel kleine letters als hoofdletters (a-zA-Z) om letters te herkennen
     let onderdelen = item.waarde.match(/([0-9.,:]+|[a-zA-Z]+)/g) || [item.waarde];
     
     onderdelen.forEach((deel, deelIndex) => {
       let isLetter = /[a-zA-Z]/.test(deel);
       
       if (isLetter) {
-        // GEVRAAGD: Zet de letters om naar kleine letters ('kr') op de 'Nu' rij (index 0)
-        let eenheidTekst = (index === 0 && deel.toLowerCase() === "kr") ? "kr" : deel;
+        // GEWIJZIGD: Als de letter 'kr' of 'Kr' is, negeren we deze volledig (overslaan)
+        if (deel.toLowerCase() === "kr") {
+          return;
+        }
         
-        let tekstElement = waardeStack.addText(eenheidTekst)
+        let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
         tekstElement.fontSize = 8.5
         tekstElement.fontWeight = "normal"
-        
-        // GEVRAAGD: Maak de eenheid 'kr' op de 'Nu' rij (index 0) groen, anders grijs
-        if (index === 0) {
-          tekstElement.textColor = new Color("#30d158") // Groen
-        } else {
-          tekstElement.textColor = new Color("#aaaaaa") // Grijs
-        }
+        tekstElement.textColor = new Color("#aaaaaa") // Grijs voor de tijdsduur-eenheden
         
         // Voeg ruimte toe tussen de eenheden indien van toepassing
         if (deelIndex < onderdelen.length - 1) {
