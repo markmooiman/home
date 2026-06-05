@@ -42,8 +42,8 @@ gradient.colors = [
 gradient.locations = [0.0, 1.0]
 widget.backgroundGradient = gradient
 
-// Ruime marges
-widget.setPadding(14, 14, 14, 14)
+// Strakke marges om de waarden en de fysieke knop perfect te balanceren
+widget.setPadding(10, 12, 10, 12)
 
 if (tabelData.length === 0) {
   let foutTekst = widget.addText("Geen data")
@@ -61,27 +61,23 @@ if (tabelData.length === 0) {
     rijStack.layoutHorizontally()
     rijStack.centerAlignContent()
     
-    // De 'Nu' rij (index 0) is Groen, de rest is grijs (#8e8e93)
-    let tekstKleur = (targetIndex === 0) ? new Color("#30d158") : new Color("#8e8e93");
-    
-    // GECORRIGEERD: Maak een transparant klikgebied aan via een alpha van 0.0
-    if (targetIndex === 10) {
-      let refreshKnop = rijStack.addStack()
-      refreshKnop.backgroundColor = new Color("#000000", 0.0) // 100% transparant
-      refreshKnop.setPadding(10, 20, 10, 20) 
-      
-      let encodedNaam = encodeURIComponent(SCRIPT_NAAM)
-      refreshKnop.url = "scriptable:///run/" + encodedNaam
-    }
-    
     rijStack.addSpacer() // Duwt de waarden strak naar de rechterkant
     
     let waardeStack = rijStack.addStack()
     waardeStack.layoutHorizontally()
     waardeStack.centerAlignContent()
     
+    let tekstKleur = (targetIndex === 0) ? new Color("#30d158") : new Color("#8e8e93");
+    
     // Splits de cijfers en letters
     let onderdelen = item.waarde.match(/([0-9.,:]+|[a-zA-Z]+)/g) || [item.waarde];
+    
+    // Als dit de duration rij (index 5) is, halen we de seconden weg
+    if (targetIndex === 5 && onderdelen.length >= 2) {
+      if (onderdelen[onderdelen.length - 1].toLowerCase() === "s") {
+        onderdelen.splice(-2, 2); 
+      }
+    }
     
     onderdelen.forEach((deel, deelIndex) => {
       let isLetter = /[a-zA-Z]/.test(deel);
@@ -101,19 +97,41 @@ if (tabelData.length === 0) {
       } else {
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
-        tekstElement.fontSize = 12.5 
+        tekstElement.fontSize = 11.5 
         tekstElement.fontWeight = "bold"
         tekstElement.textColor = tekstKleur
       }
     })
     
     if (sIdx < rowsToInclude.length - 1) {
-      widget.addSpacer(5)
+      widget.addSpacer(4)
     }
   })
 }
 
-// AFHANDELING EN WEERGAVE
+widget.addSpacer(6) // Ruimte tussen de waarden en de verversknop
+
+// 4. DE COMPACTE VERVERS KNOP (Alleen het icoon, gecentreerd onderin)
+let knopStack = widget.addStack()
+knopStack.layoutHorizontally()
+knopStack.addSpacer() // Duwt de knop naar het midden
+
+let refreshKnop = knopStack.addStack()
+refreshKnop.backgroundColor = new Color("#2c2c2e") // Iets lichtere knop achtergrond
+refreshKnop.setPadding(4, 12, 4, 12) // Voldoende klikoppervlak rondom het icoon
+refreshKnop.cornerRadius = 6
+
+// GEVRAAGD: Alleen het icoon behouden, tekst is verwijderd
+let knopIcoon = refreshKnop.addText("🔄")
+knopIcoon.fontSize = 11
+
+// Koppel de ververs actie aan de hand van je scriptnaam
+let encodedNaam = encodeURIComponent(SCRIPT_NAAM)
+refreshKnop.url = "scriptable:///run/" + encodedNaam
+
+knopStack.addSpacer() // Sluit centrering af
+
+// 5. AFHANDELING EN WEERGAVE
 if (config.runsInWidget) {
   Script.setWidget(widget)
 } else {
