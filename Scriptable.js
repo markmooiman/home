@@ -12,7 +12,7 @@ const WEB_PAGINA_URL = "https://markmooiman.github.io/home/";
 let webView = new WebView()
 await webView.loadURL(WEB_PAGINA_URL)
 
-// Wacht 800ms zodat de JavaScript op GitHub de actuele hypotheekstand heeft berekend
+// Wacht 800ms zodat de JavaScript op GitHub de actuele stand heeft berekend
 await new Promise(r => Timer.schedule(800, false, r))
 
 // 2. SCRAPING: Haal alle labels en waarden netjes op uit de tabel-structuur
@@ -39,13 +39,13 @@ let widget = new ListWidget()
 // Lineair kleurverloop van RGB (60,60,60) naar RGB (10,10,10)
 let gradient = new LinearGradient()
 gradient.colors = [
-  new Color("#3c3c3c", 1.0), // Bovenkant (60, 60, 60)
-  new Color("#0a0a0a", 1.0)  // Onderkant (10, 10, 10)
+  new Color("#3c3c3c", 1.0), 
+  new Color("#0a0a0a", 1.0)  
 ]
 gradient.locations = [0.0, 1.0]
 widget.backgroundGradient = gradient
 
-// Marges instellen (strakker en passend bij de webpagina)
+// Marges instellen
 widget.setPadding(12, 14, 12, 14)
 
 // 4. Voeg de gescrapete data dynamisch toe aan de widget
@@ -59,7 +59,7 @@ if (tabelData.length === 0) {
     rijStack.layoutHorizontally()
     rijStack.centerAlignContent()
     
-    // Labels een slagje kleiner (fontSize 9.5) en altijd in het grijs (#8e8e93)
+    // Labels exact op maat: Maak ze 9.5 groot (een slag kleiner) en grijs
     let labelTekst = rijStack.addText(item.label)
     labelTekst.fontSize = 9.5
     labelTekst.textColor = new Color("#8e8e93")
@@ -71,39 +71,39 @@ if (tabelData.length === 0) {
     waardeStack.layoutHorizontally()
     waardeStack.centerAlignContent()
     
-    // Bepaal de hoofdkleur van de tekst (Rij 0 = groen, de rest is grijs)
     let tekstKleur = (index === 0) ? new Color("#30d158") : new Color("#8e8e93");
     
-    // Splits de cijfers en letters (zoals Kr, j, m, d, u, s)
-    let onderdelen = item.waarde.match(/([0-9.,:]+|[a-zA-Z]+)/g) || [item.waarde];
+    // Splitst de tekst nu zuiver op basis van de spaties die we in de HTML hebben toegevoegd
+    let onderdelen = item.waarde.trim().split(/\s+/);
     
     onderdelen.forEach((deel, deelIndex) => {
-      let isLetter = /[a-zA-Z]/.test(deel);
+      // Controleer of dit deel pure letters bevat (zoals Kr, j, m, d, u, s)
+      let isEenheid = /[a-zA-Z]/.test(deel);
       
       let tekstElement = waardeStack.addText(deel)
       tekstElement.lineLimit = 1
       
-      if (isLetter) {
-        // De eenheden/letters nóg een slagje kleiner (fontSize 7.5)
+      if (isEenheid) {
+        // Eenheden exact op maat: Maak ze 7.5 groot (nóg een slag kleiner)
         tekstElement.fontSize = 7.5
         tekstElement.fontWeight = "normal"
         
-        // Op de 'Nu' rij (index 0) kleurt de 'Kr' eenheid groen, anders grijs (#aaaaaa)
+        // De Kr op de 'Nu' rij (index 0) kleurt groen, de rest blijft grijs
         if (index === 0) {
-          tekstElement.textColor = new Color("#30d158") 
+          tekstElement.textColor = new Color("#30d158")
         } else {
           tekstElement.textColor = new Color("#aaaaaa") 
         }
-        
-        // Ruimte toevoegen tussen de eenheden
-        if (deelIndex < onderdelen.length - 1) {
-          waardeStack.addSpacer(4) 
-        }
       } else {
-        // De cijfers zelf blijven lekker groot en dikgedrukt (fontSize 13)
+        // De getallen zelf blijven dikgedrukt en 13 groot
         tekstElement.fontSize = 13
         tekstElement.fontWeight = "bold"
         tekstElement.textColor = tekstKleur
+      }
+      
+      // Voeg een beetje tussenruimte toe na elk onderdeel (behalve de allerlaatste)
+      if (deelIndex < onderdelen.length - 1) {
+        waardeStack.addSpacer(3)
       }
     })
     
@@ -113,7 +113,7 @@ if (tabelData.length === 0) {
   })
 }
 
-// 5. DE VERVERS ACTIE (Gehele widget fungeert als transparante knop)
+// 5. DE VERVERS ACTIE (Onzichtbaar over de hele widget)
 let encodedNaam = encodeURIComponent(SCRIPT_NAAM)
 widget.url = "scriptable:///run/" + encodedNaam
 
