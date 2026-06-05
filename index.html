@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypotheek Dashboard v9</title>
+    <title>Hypotheek Dashboard v10</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -50,16 +50,15 @@
             white-space: nowrap;
         }
         .highlight {
-            color: #30d158; /* iOS Systeemgroen */
+            color: #30d158;
         }
         .kleine-eenheid {
             font-size: 0.75rem;
             font-weight: normal;
-            margin-left: 1px;
+            margin-left: 2px;
             margin-right: 3px;
-            color: #aaaaaa; /* Standaard grijs voor letters op de andere rijen */
+            color: #aaaaaa;
         }
-        /* Zorgt ervoor dat de kleine eenheid binnen een highlight-groep (zoals Nu) ook groen wordt */
         .highlight .kleine-eenheid {
             color: inherit; 
         }
@@ -146,12 +145,14 @@
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2 
             });
-            return `${geformatteerdGetal}<span class="kleine-eenheid">Kr</span>`;
+            // SPATIE TOEGEVOEGD VÓÓR Kr VOOR SCRIPTABLE HERKENNING
+            return `${geformatteerdGetal} <span class="kleine-eenheid">Kr</span>`;
         }
 
         function formatTijdDeel(waarde, letter, forceTwoDigits = false) {
             const getalWeergave = forceTwoDigits ? String(waarde).padStart(2, '0') : waarde;
-            return `${getalWeergave}<span class="kleine-eenheid">${letter}</span>`;
+            // SPATIE TOEGEVOEGD VÓÓR DE LETTER VOOR SCRIPTABLE HERKENNING
+            return `${getalWeergave} <span class="kleine-eenheid">${letter}</span>`;
         }
 
         function berekenTijdResterend(doelBedrag, actueelBedrag) {
@@ -198,7 +199,7 @@
                 output.push(formatTijdDeel(sec, 's', true));
             }
             
-            return output.join("");
+            return output.join(" "); // EXTRA SPATIE TUSSEN DE BLOKKEN
         }
 
         function updateDashboard() {
