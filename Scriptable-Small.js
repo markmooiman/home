@@ -39,14 +39,14 @@ let widget = new ListWidget()
 // Het vertrouwde lineaire kleurverloop (van RGB 60,60,60 naar 10,10,10)
 let gradient = new LinearGradient()
 gradient.colors = [
-  new Color("#3c3c3c", 1.0), 
-  new Color("#0a0a0a", 1.0)  
+  new Color("#3c3c3c", 1.0), // Bovenkant
+  new Color("#0a0a0a", 1.0)  // Onderkant
 ]
 gradient.locations = [0.0, 1.0]
 widget.backgroundGradient = gradient
 
-// Ruime marges binnen de widget omdat we geen labels tonen
-widget.setPadding(14, 14, 14, 14)
+// Marges strakker ingesteld om ruimte te maken voor de fysieke knop onderin
+widget.setPadding(10, 12, 10, 12)
 
 if (tabelData.length === 0) {
   let foutTekst = widget.addText("Geen data")
@@ -71,7 +71,7 @@ if (tabelData.length === 0) {
     waardeStack.layoutHorizontally()
     waardeStack.centerAlignContent()
     
-    // Gevraagd: 'Nu' rij (index 0) is Groen, de rest is grijs (#8e8e93)
+    // 'Nu' rij (index 0) is Groen, de rest is grijs (#8e8e93)
     let tekstKleur = (targetIndex === 0) ? new Color("#30d158") : new Color("#8e8e93");
     
     // Splits de cijfers en letters
@@ -86,7 +86,7 @@ if (tabelData.length === 0) {
           return;
         }
         
-        // Toon de duration eenheden (j, m, d, u, s) op de superkleine grootte 7.5
+        // Toon de duration eenheden (j, m, d, u, s) op grootte 7.5
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
         tekstElement.fontSize = 7.5
@@ -97,31 +97,50 @@ if (tabelData.length === 0) {
           waardeStack.addSpacer(3) 
         }
       } else {
-        // De getallen zelf (fontSize 12.5 voor een perfecte pasvorm in de kleine widget)
+        // De getallen zelf (fontSize 11.5 om perfect te passen inclusief de knop)
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
-        tekstElement.fontSize = 12.5
+        tekstElement.fontSize = 11.5
         tekstElement.fontWeight = "bold"
         tekstElement.textColor = tekstKleur
       }
     })
     
-    // Mooie gebalanceerde tussenruimte tussen de 5 rijen met waarden
+    // Compacte tussenruimte tussen de 5 rijen met waarden
     if (sIdx < rowsToInclude.length - 1) {
-      widget.addSpacer(5)
+      widget.addSpacer(4)
     }
   })
 }
 
-// 4. DE VERVERS ACTIE (Gehele widget fungeert als transparante knop)
+widget.addSpacer(6) // Ruimte tussen de waarden en de verversknop
+
+// 4. DE FYSIEKE VERVERS KNOP (Exact gebaseerd op het andere script)
+let knopStack = widget.addStack()
+knopStack.layoutHorizontally()
+knopStack.addSpacer() // Centreert de knop horizontaal in de Small widget
+
+let refreshKnop = knopStack.addStack()
+refreshKnop.backgroundColor = new Color("#2c2c2e") // Iets lichtere knop achtergrond
+refreshKnop.setPadding(4, 10, 4, 10) // Iets compacter voor de Small container
+refreshKnop.cornerRadius = 6
+
+let knopTekst = refreshKnop.addText("🔄 Ververs")
+knopTekst.fontSize = 9.5
+knopTekst.fontWeight = "bold"
+knopTekst.textColor = new Color("#0a84ff") // Blauwe letters
+
+// Koppel de dynamische URL op basis van de ingevulde scriptnaam
 let encodedNaam = encodeURIComponent(SCRIPT_NAAM)
-widget.url = "scriptable:///run/" + encodedNaam
+refreshKnop.url = "scriptable:///run/" + encodedNaam
+
+knopStack.addSpacer() // Sluit de centrering af
 
 // 5. AFHANDELING EN WEERGAVE
 if (config.runsInWidget) {
   Script.setWidget(widget)
 } else {
-  widget.presentSmall() // Small widget testweergave
+  widget.presentSmall() // Small widget testweergave binnen de app
 }
 
 Script.complete()
