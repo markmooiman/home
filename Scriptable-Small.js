@@ -45,7 +45,7 @@ gradient.colors = [
 gradient.locations = [0.0, 1.0]
 widget.backgroundGradient = gradient
 
-// Iets ruimere verticale marges omdat we minder rijen tonen in de Small widget
+// Ruime marges binnen de widget omdat we geen labels tonen
 widget.setPadding(14, 14, 14, 14)
 
 if (tabelData.length === 0) {
@@ -53,38 +53,26 @@ if (tabelData.length === 0) {
   foutTekst.fontSize = 12
   foutTekst.textColor = Color.red()
 } else {
-  // Mapping tabel om de exacte posities van de grote tabel te koppelen aan je nieuwe Small labels
+  // Configuratielijst op basis van de indexen van de grote tabel
   // Index: 0=Nu, 1=Half Jaar, 2=Jaar, 5=Next 10K, 10=Updated
-  let smallWidgetConfig = [
-    { index: 0, label: "Nu" },
-    { index: 1, label: "HJr" },
-    { index: 2, label: "Jr" },
-    { index: 5, label: "10K" },
-    { index: 10, label: "Upd" }
-  ];
+  let rowsToInclude = [0, 1, 2, 5, 10];
 
-  smallWidgetConfig.forEach((cfg, sIdx) => {
-    let item = tabelData[cfg.index];
+  rowsToInclude.forEach((targetIndex, sIdx) => {
+    let item = tabelData[targetIndex];
     if (!item) return;
 
     let rijStack = widget.addStack()
     rijStack.layoutHorizontally()
     rijStack.centerAlignContent()
     
-    // Gevraagd: De nieuwe compacte labels in het grijs (#8e8e93)
-    let labelTekst = rijStack.addText(cfg.label)
-    labelTekst.fontSize = 10.5
-    labelTekst.textColor = new Color("#8e8e93")
-    labelTekst.lineLimit = 1
-    
-    rijStack.addSpacer() // Duwt de waarde strak naar de rechterkant
+    rijStack.addSpacer() // Duwt de complete waarde-stack strak naar de rechterkant
     
     let waardeStack = rijStack.addStack()
     waardeStack.layoutHorizontally()
     waardeStack.centerAlignContent()
     
-    // Gevraagd: 'Nu' rij (index 0) is Groen, de rest is grijs
-    let tekstKleur = (cfg.index === 0) ? new Color("#30d158") : new Color("#8e8e93");
+    // Gevraagd: 'Nu' rij (index 0) is Groen, de rest is grijs (#8e8e93)
+    let tekstKleur = (targetIndex === 0) ? new Color("#30d158") : new Color("#8e8e93");
     
     // Splits de cijfers en letters
     let onderdelen = item.waarde.match(/([0-9.,:]+|[a-zA-Z]+)/g) || [item.waarde];
@@ -93,12 +81,12 @@ if (tabelData.length === 0) {
       let isLetter = /[a-zA-Z]/.test(deel);
       
       if (isLetter) {
-        // Gevraagd: Verberg de 'kr'/'Kr' eenheid voor alle bedragen volledig
+        // Verberg de 'kr'/'Kr' eenheid voor alle bedragen volledig
         if (deel.toLowerCase() === "kr") {
           return;
         }
         
-        // Toon de duration eenheden (j, m, d, u, s) op grootte 7.5
+        // Toon de duration eenheden (j, m, d, u, s) op de superkleine grootte 7.5
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
         tekstElement.fontSize = 7.5
@@ -109,7 +97,7 @@ if (tabelData.length === 0) {
           waardeStack.addSpacer(3) 
         }
       } else {
-        // De getallen zelf (fontSize 12.5 om perfect te passen in het kleine vierkant)
+        // De getallen zelf (fontSize 12.5 voor een perfecte pasvorm in de kleine widget)
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
         tekstElement.fontSize = 12.5
@@ -118,8 +106,8 @@ if (tabelData.length === 0) {
       }
     })
     
-    // Geef de Small widget een mooie gebalanceerde tussenruimte tussen de 5 rijen
-    if (sIdx < smallWidgetConfig.length - 1) {
+    // Mooie gebalanceerde tussenruimte tussen de 5 rijen met waarden
+    if (sIdx < rowsToInclude.length - 1) {
       widget.addSpacer(5)
     }
   })
