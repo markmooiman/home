@@ -117,7 +117,10 @@ widget.url = "scriptable:///run/" + encodedNaam
 if (config.runsInWidget) {
   Script.setWidget(widget)
 } else {
+  // GECORRIGEERD: Wacht 1 seconde en sluit de app daarna automatisch af na handmatige start
   widget.presentSmall()
+  await new Promise(r => Timer.schedule(1000, false, r))
+  App.close()
 }
 
 Script.complete()
