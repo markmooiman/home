@@ -8,116 +8,94 @@ const SCRIPT_NAAM = "Hypotheek";
 const WEB_PAGINA_URL = "https://markmooiman.github.io/home/";
 // ==========================================
 
-// 1. Start de browser op de achtergrond en laad de URL
 let webView = new WebView()
 await webView.loadURL(WEB_PAGINA_URL)
-
-// Wacht 800ms zodat de JavaScript op GitHub de actuele stand heeft berekend
 await new Promise(r => Timer.schedule(800, false, r))
 
-// 2. SCRAPING: Haal alle labels en waarden netjes op uit de tabel-structuur
+// De nieuwe scraper leest de cellen nu volledig onafhankelijk van elkaar uit via de classes
 let scrapeScript = `
   let data = [];
   let rijen = document.querySelectorAll("table tbody tr");
-  
   rijen.forEach(rij => {
-    let labelEl = rij.querySelector(".label");
-    let waardeEl = rij.querySelector(".waarde");
-    if (labelEl && waardeEl) {
-      data.push({ label: labelEl.innerText, waarde: waardeEl.innerText });
-    }
+    let label = rij.querySelector(".label").innerText;
+    let cijfer = rij.querySelector(".cijfer").innerText;
+    let eenheid = rij.querySelector(".eenheid").innerText;
+    data.push({ label: label, cijfer: cijfer, eenheid: eenheid });
   });
-  
   JSON.stringify(data);
 `
 let gescrapeteDataRaw = await webView.evaluateJavaScript(scrapeScript)
 let tabelData = JSON.parse(gescrapeteDataRaw)
 
-// 3. Bouw de native iOS Widget
 let widget = new ListWidget()
-
-// Lineair kleurverloop van RGB (60,60,60) naar RGB (10,10,10)
 let gradient = new LinearGradient()
-gradient.colors = [
-  new Color("#3c3c3c", 1.0), 
-  new Color("#0a0a0a", 1.0)  
-]
+gradient.colors = [new Color("#3c3c3c", 1.0), new Color("#0a0a0a", 1.0)]
 gradient.locations = [0.0, 1.0]
 widget.backgroundGradient = gradient
-
-// Marges instellen
 widget.setPadding(12, 14, 12, 14)
 
-// 4. Voeg de gescrapete data dynamisch toe aan de widget
-if (tabelData.length === 0) {
-  let foutTekst = widget.addText("Geen data gevonden in tabel")
-  foutTekst.fontSize = 12
-  foutTekst.textColor = Color.red()
-} else {
+if (tabelData.length > 0) {
   tabelData.forEach((item, index) => {
     let rijStack = widget.addStack()
     rijStack.layoutHorizontally()
     rijStack.centerAlignContent()
     
-    // Labels exact op maat: Maak ze 9.5 groot (een slag kleiner) en grijs
+    // 1. LABELS: Nu dwingen we iOS naar exact 9.5
     let labelTekst = rijStack.addText(item.label)
     labelTekst.fontSize = 9.5
     labelTekst.textColor = new Color("#8e8e93")
-    labelTekst.lineLimit = 1
     
-    rijStack.addSpacer() // Duwt de waarde strak naar de rechterkant
+    rijStack.addSpacer()
     
     let waardeStack = rijStack.addStack()
     waardeStack.layoutHorizontally()
     waardeStack.centerAlignContent()
     
-    let tekstKleur = (index === 0) ? new Color("#30d158") : new Color("#8e8e93");
+    let hoofdKleur = (index === 0) ? new Color("#30d158") : new Color("#8e8e93");
     
-    // Splitst de tekst nu zuiver op basis van de spaties die we in de HTML hebben toegevoegd
-    let onderdelen = item.waarde.trim().split(/\s+/);
-    
-    onderdelen.forEach((deel, deelIndex) => {
-      // Controleer of dit deel pure letters bevat (zoals Kr, j, m, d, u, s)
-      let isEenheid = /[a-zA-Z]/.test(deel);
-      
-      let tekstElement = waardeStack.addText(deel)
-      tekstElement.lineLimit = 1
-      
-      if (isEenheid) {
-        // Eenheden exact op maat: Maak ze 7.5 groot (nóg een slag kleiner)
-        tekstElement.fontSize = 7.5
-        tekstElement.fontWeight = "normal"
+    // Controleer of het een duration-rij is (bevat '|')
+    if (item.cijfer.includes("|")) {
+      let blokken = item.cijfer.trim().split(" ");
+      blokken.forEach((blok, bIdx) => {
+        let delen = blok.split("|");
+        let getal = delen[0];
+        let eenheidLetter = delen[1];
         
-        // De Kr op de 'Nu' rij (index 0) kleurt groen, de rest blijft grijs
-        if (index === 0) {
-          tekstElement.textColor = new Color("#30d158")
-        } else {
-          tekstElement.textColor = new Color("#aaaaaa") 
+        let nrTxt = waardeStack.addText(getal)
+        nrTxt.fontSize = 13
+        nrTxt.fontWeight = "bold"
+        nrTxt.textColor = hoofdKleur
+        
+        if (eenheidLetter) {
+          waardeStack.addSpacer(1)
+          let letTxt = waardeStack.addText(eenheidLetter)
+          letTxt.fontSize = 7.5 // Gevraagd: Eenheden exact 7.5
+          letTxt.textColor = new Color("#aaaaaa")
         }
-      } else {
-        // De getallen zelf blijven dikgedrukt en 13 groot
-        tekstElement.fontSize = 13
-        tekstElement.fontWeight = "bold"
-        tekstElement.textColor = tekstKleur
-      }
+        if (bIdx < blokken.length - 1) waardeStack.addSpacer(4)
+      })
+    } else {
+      // Normale valuta of tijdstempel rij
+      let nrTxt = waardeStack.addText(item.cijfer)
+      nrTxt.fontSize = 13
+      nrTxt.fontWeight = "bold"
+      nrTxt.textColor = hoofdKleur
       
-      // Voeg een beetje tussenruimte toe na elk onderdeel (behalve de allerlaatste)
-      if (deelIndex < onderdelen.length - 1) {
-        waardeStack.addSpacer(3)
+      if (item.eenheid) {
+        waardeStack.addSpacer(2)
+        let letTxt = waardeStack.addText(item.eenheid)
+        letTxt.fontSize = 7.5 // Gevraagd: 'Kr' exact naar 7.5
+        letTxt.textColor = hoofdKleur // 'Kr' kleurt groen mee op rij 0
       }
-    })
-    
-    if (index < tabelData.length - 1) {
-      widget.addSpacer(3)
     }
+    
+    if (index < tabelData.length - 1) widget.addSpacer(3)
   })
 }
 
-// 5. DE VERVERS ACTIE (Onzichtbaar over de hele widget)
 let encodedNaam = encodeURIComponent(SCRIPT_NAAM)
 widget.url = "scriptable:///run/" + encodedNaam
 
-// 6. AFHANDELING EN WEERGAVE
 if (config.runsInWidget) {
   Script.setWidget(widget)
 } else {
@@ -125,5 +103,4 @@ if (config.runsInWidget) {
   await new Promise(r => Timer.schedule(1000, false, r))
   App.close()
 }
-
 Script.complete()
