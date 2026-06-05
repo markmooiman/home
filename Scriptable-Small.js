@@ -5,7 +5,7 @@
 const SCRIPT_NAAM = "Hypotheek Small"; 
 
 // Dezelfde live URL van jouw GitHub Pages website
-const WEB_PAGINA_URL = "https://github.io";
+const WEB_PAGINA_URL = "https://markmooiman.github.io/home/";
 // ==========================================
 
 // 1. Start de browser op de achtergrond en laad de URL
