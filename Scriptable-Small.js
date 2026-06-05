@@ -9,7 +9,7 @@ const WEB_PAGINA_URL = "https://markmooiman.github.io/home/";
 let webView = new WebView()
 await webView.loadURL(WEB_PAGINA_URL)
 
-// Wacht 800ms zodat de JavaScript op GitHub de actuele hypotheekstand heeft berekend
+// Wacht 800ms zodat de JavaScript op GitHub de actuele stand heeft berekend
 await new Promise(r => Timer.schedule(800, false, r))
 
 // 2. SCRAPING: Haal alle labels en waarden op uit de tabel-structuur
@@ -42,7 +42,7 @@ gradient.colors = [
 gradient.locations = [0.0, 1.0]
 widget.backgroundGradient = gradient
 
-// Ruime marges omdat de knop nu in de regel zelf is weggewerkt
+// Ruime marges
 widget.setPadding(14, 14, 14, 14)
 
 if (tabelData.length === 0) {
@@ -64,11 +64,11 @@ if (tabelData.length === 0) {
     // De 'Nu' rij (index 0) is Groen, de rest is grijs (#8e8e93)
     let tekstKleur = (targetIndex === 0) ? new Color("#30d158") : new Color("#8e8e93");
     
-    // GEVRAAGD: Plaats de transparante verversknop exact VÓÓR de Updated time (index 10)
+    // GECORRIGEERD: Maak een transparant klikgebied aan via een alpha van 0.0
     if (targetIndex === 10) {
       let refreshKnop = rijStack.addStack()
-      refreshKnop.backgroundColor = Color.transparent() // Volledig transparant
-      refreshKnop.setPadding(10, 20, 10, 20) // Maakt een lekker groot onzichtbaar klikgebied links van de tijd
+      refreshKnop.backgroundColor = new Color("#000000", 0.0) // 100% transparant
+      refreshKnop.setPadding(10, 20, 10, 20) 
       
       let encodedNaam = encodeURIComponent(SCRIPT_NAAM)
       refreshKnop.url = "scriptable:///run/" + encodedNaam
@@ -101,7 +101,7 @@ if (tabelData.length === 0) {
       } else {
         let tekstElement = waardeStack.addText(deel)
         tekstElement.lineLimit = 1
-        tekstElement.fontSize = 12.5 // Weer mooi groot nu de knop geen extra regel inneemt
+        tekstElement.fontSize = 12.5 
         tekstElement.fontWeight = "bold"
         tekstElement.textColor = tekstKleur
       }
