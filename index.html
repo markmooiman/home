@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypotheek Dashboard v8</title>
+    <title>Hypotheek Dashboard v9</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -50,14 +50,18 @@
             white-space: nowrap;
         }
         .highlight {
-            color: #30d158;
+            color: #30d158; /* iOS Systeemgroen */
         }
         .kleine-eenheid {
             font-size: 0.75rem;
             font-weight: normal;
             margin-left: 1px;
             margin-right: 3px;
-            color: #aaaaaa;
+            color: #aaaaaa; /* Standaard grijs voor letters op de andere rijen */
+        }
+        /* Zorgt ervoor dat de kleine eenheid binnen een highlight-groep (zoals Nu) ook groen wordt */
+        .highlight .kleine-eenheid {
+            color: inherit; 
         }
         .kleine-eenheid:last-child {
             margin-right: 0;
@@ -177,21 +181,17 @@
             
             let output = [];
             
-            // Regel 2 & 3: Dynamisch verbergen op basis van de totale resterende duur
             if (j > 0) {
-                // 1 jaar of langer: Toon alleen jaren, maanden en dagen (Verberg minuten en seconden)
                 output.push(formatTijdDeel(j, 'j', false));
                 output.push(formatTijdDeel(m, 'm', true));
                 output.push(formatTijdDeel(d, 'd', true));
                 output.push(formatTijdDeel(u, 'u', true));
             } else if (m > 0) {
-                // Tussen 1 maand en 1 jaar: Verberg alleen de seconden
                 output.push(formatTijdDeel(m, 'm', false));
                 output.push(formatTijdDeel(d, 'd', true));
                 output.push(formatTijdDeel(u, 'u', true));
                 output.push(formatTijdDeel(min, 'm', true));
             } else {
-                // Korter dan 1 maand: Toon de volledige live-ticker tot op de seconde nauwkeurig
                 if (d > 0) output.push(formatTijdDeel(d, 'd', false));
                 output.push(formatTijdDeel(u, 'u', true));
                 output.push(formatTijdDeel(min, 'm', true));
@@ -237,7 +237,6 @@
             document.getElementById('tot-500k').innerHTML = berekenTijdResterend(500000, actueelBedrag);
             document.getElementById('tot-0').innerHTML = berekenTijdResterend(0, actueelBedrag);
 
-            // Regel 4: Updated waarde toont nu ALLEEN de tijd, geen datum meer
             const urenStr = String(cetDatumObj.getHours()).padStart(2, '0');
             const minutenStr = String(cetDatumObj.getMinutes()).padStart(2, '0');
             const secondenStr = String(cetDatumObj.getSeconds()).padStart(2, '0');
