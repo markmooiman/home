@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Widget Tabel Test</title>
+    <title>Hypotheek Live Tracker</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #1c1c1e;
+            background-color: #1c1c1e; /* iOS Dark Mode achtergrond */
             color: #ffffff;
             margin: 0;
             padding: 12px;
@@ -27,32 +27,27 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
         th, td {
-            padding: 10px 14px;
+            padding: 14px 16px;
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
         th {
             background-color: #3a3a3c;
-            color: #0a84ff;
+            color: #0a84ff; /* iOS Systeemblauw */
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.75rem;
             letter-spacing: 0.5px;
-        }
-        tr {
-            border-bottom: 1px solid #3a3a3c;
-        }
-        tr:last-child {
-            border-bottom: none;
         }
         .label {
             color: #eaeaea;
             font-weight: 500;
         }
         .waarde {
-            color: #30d158;
+            color: #ffffff; /* Wit zoals gespecificeerd in jouw configuratie */
             text-align: right;
-            font-variant-numeric: tabular-nums;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums; /* Voorkomt dat cijfers verspringen bij updates */
         }
     </style>
 </head>
@@ -61,50 +56,63 @@
     <table>
         <thead>
             <tr>
-                <th>Label</th>
-                <th style="text-align: right;">Waarde</th>
+                <th colspan="2">Hypotheek Status</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td class="label">🔋 Batterij</td>
-                <td class="waarde">84%</td>
-            </tr>
-            <tr>
-                <td class="label">☀️ Temperatuur</td>
-                <td class="waarde">19°C</td>
-            </tr>
-            <tr>
-                <td class="label">🏃 Stappen</td>
-                <td id="stappen-teller" class="waarde">6.420</td>
-            </tr>
-            <tr>
-                <td class="label">☕ Koffie consumptie</td>
-                <td class="waarde">3 koppen</td>
-            </tr>
-            <tr>
-                <td class="label">📶 Wi-Fi Signaal</td>
-                <td class="waarde">Uitstekend</td>
+                <td class="label">🏠 Actuele Hypotheek</td>
+                <td id="hypotheek-bedrag" class="waarde">Laden...</td>
             </tr>
         </tbody>
     </table>
 
     <script>
-        function updateStappen() {
-            // Bereken een willekeurig heel getal tussen 1.000 en 1.000.000
-            const min = 1000;
-            const max = 1000000;
-            const randomStappen = Math.floor(Math.random() * (max - min + 1)) + min;
-            
-            // Toon het getal met Nederlandse duizendtal-punten (bijv. 842.105)
-            document.getElementById("stappen-teller").innerText = randomStappen.toLocaleString('nl-NL');
+        // CONFIGURATIE (Strict CET)
+        const START_BEDRAG = 1258000; 
+        const AFNAME_PER_MAAND = 15000;
+
+        // De exacte absolute Unix-tijdstempel voor 27 jan 2026 23:00:00 CET
+        const START_UNIX_MS = 1769551200000; 
+
+        // BEREKENING TEMPO (op basis van gemiddeld 30,4375 dagen per maand)
+        const MS_PER_MAAND = 30.4375 * 24 * 60 * 60 * 1000;
+        const AFNAME_PER_MS = AFNAME_PER_MAAND / MS_PER_MAAND;
+
+        const displayBedrag = document.getElementById('hypotheek-bedrag');
+
+        // Functie die de huidige tijd van de iPhone dwingt naar de CET/CEST tijdzone
+        function getHuidigeTijdInCetMs() {
+            const nu = new Date();
+            const cetTekst = nu.toLocaleString("en-US", { timeZone: "Europe/Stockholm" });
+            return new Date(cetTekst).getTime();
         }
 
-        // Voer de functie direct uit bij het laden van de pagina
-        updateStappen();
+        // De live ticker (update elke 10 milliseconden)
+        function berekenEnToonHypotheek() {
+            const nuCetMs = getHuidigeTijdInCetMs(); 
+            
+            // Bereken het absolute verschil in milliseconden
+            const verstrekenMs = nuCetMs - START_UNIX_MS;
+            
+            // Bereken de exacte actuele stand van de hypotheek
+            let actueelBedrag = START_BEDRAG - (verstrekenMs * AFNAME_PER_MS);
+            if (actueelBedrag < 0) actueelBedrag = 0;
+            
+            // Toon het bedrag als Zweedse Kronen (kr) met 2 decimalen
+            displayBedrag.innerText = actueelBedrag.toLocaleString('sv-SE', { 
+                style: 'currency', 
+                currency: 'SEK', 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
 
-        // Herhaal de functie elke 1000 milliseconden (1 seconde)
-        setInterval(updateStappen, 1000);
+        // Voer direct eenmalig uit bij het laden van de pagina
+        berekenEnToonHypotheek();
+
+        // Start de snelle interval van 10ms voor vloeiende live weergave in de browser
+        setInterval(berekenEnToonHypotheek, 10);
     </script>
 
 </body>
