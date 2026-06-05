@@ -3,117 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypotheek Dashboard v10</title>
+    <title>Hypotheek Dashboard v11</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #1c1c1e;
             color: #ffffff;
-            margin: 0; 
-            padding: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: auto;
-            min-height: auto;
-            box-sizing: border-box;
+            margin: 0; padding: 12px;
+            display: flex; justify-content: center; align-items: center;
+            height: auto; min-height: auto; box-sizing: border-box;
         }
         table {
-            width: 100%;
-            max-width: 310px; 
-            border-collapse: collapse;
-            background-color: #2c2c2e;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            width: 100%; max-width: 310px; 
+            border-collapse: collapse; background-color: #2c2c2e;
+            border-radius: 12px; overflow: hidden;
         }
         td {
-            padding: 10px 14px;
-            text-align: left;
-            font-size: 0.85rem;
-            border-bottom: 1px solid #3a3a3c;
+            padding: 10px 14px; text-align: left;
+            font-size: 0.85rem; border-bottom: 1px solid #3a3a3c;
         }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        .label {
-            color: #8e8e93;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .waarde {
-            color: #8e8e93;
-            text-align: right;
-            font-weight: bold;
-            font-size: 0.95rem;
-            font-variant-numeric: tabular-nums;
-            white-space: nowrap;
-        }
-        .highlight {
-            color: #30d158;
-        }
-        .kleine-eenheid {
-            font-size: 0.75rem;
-            font-weight: normal;
-            margin-left: 2px;
-            margin-right: 3px;
-            color: #aaaaaa;
-        }
-        .highlight .kleine-eenheid {
-            color: inherit; 
-        }
-        .kleine-eenheid:last-child {
-            margin-right: 0;
-        }
+        tr:last-child td { border-bottom: none; }
+        .label { color: #8e8e93; font-weight: 500; white-space: nowrap; }
+        .waarde-container { text-align: right; white-space: nowrap; }
+        .cijfer { color: #8e8e93; font-weight: bold; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+        .eenheid { font-size: 0.75rem; font-weight: normal; margin-left: 2px; color: #aaaaaa; }
+        .highlight .cijfer, .highlight .eenheid { color: #30d158; }
     </style>
 </head>
 <body>
 
     <table>
         <tbody>
-            <tr>
+            <tr id="row-nu" class="highlight">
                 <td class="label">Nu</td>
-                <td id="nu" class="waarde highlight">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="nu-c">Laden...</span><span class="eenheid" id="nu-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-half-jaar">
                 <td class="label">Half Jaar</td>
-                <td id="half-jaar" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="hj-c">Laden...</span><span class="eenheid" id="hj-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-jaar">
                 <td class="label">Jaar</td>
-                <td id="jaar" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="j-c">Laden...</span><span class="eenheid" id="j-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-dec-2026">
                 <td class="label">28 December 2026</td>
-                <td id="dec-2026" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="dec-c">Laden...</span><span class="eenheid" id="dec-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-next-5k">
                 <td class="label">Next 5K</td>
-                <td id="next-5k" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="n5-c">Laden...</span><span class="eenheid" id="n5-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-next-10k">
                 <td class="label">Next 10K</td>
-                <td id="next-10k" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="n10-c">Laden...</span><span class="eenheid" id="n10-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-next-100k">
                 <td class="label">Next 100K</td>
-                <td id="next-100k" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="n100-c">Laden...</span><span class="eenheid" id="n100-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-tot-1m">
                 <td class="label">Tot 1M</td>
-                <td id="tot-1m" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="t1m-c">Laden...</span><span class="eenheid" id="t1m-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-tot-500k">
                 <td class="label">Tot 500K</td>
-                <td id="tot-500k" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="t500-c">Laden...</span><span class="eenheid" id="t500-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-tot-0">
                 <td class="label">Tot 0</td>
-                <td id="tot-0" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="t0-c">Laden...</span><span class="eenheid" id="t0-e"></span></td>
             </tr>
-            <tr>
+            <tr id="row-updated">
                 <td class="label">Updated</td>
-                <td id="updated" class="waarde">Laden...</td>
+                <td class="waarde-container"><span class="cijfer" id="up-c">Laden...</span><span class="eenheid" id="up-e"></span></td>
             </tr>
         </tbody>
     </table>
@@ -139,67 +102,43 @@
             return new Date(cetTekst);
         }
 
-        function formatValuta(bedrag) {
+        function splitsEnToonValuta(bedrag, cijferId, eenheidId) {
             if (bedrag < 0) bedrag = 0;
-            const geformatteerdGetal = bedrag.toLocaleString('nl-NL', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            });
-            // SPATIE TOEGEVOEGD VÓÓR Kr VOOR SCRIPTABLE HERKENNING
-            return `${geformatteerdGetal} <span class="kleine-eenheid">Kr</span>`;
+            const geformatteerdGetal = bedrag.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById(cijferId).innerText = geformatteerdGetal;
+            document.getElementById(eenheidId).innerText = "Kr";
         }
 
         function formatTijdDeel(waarde, letter, forceTwoDigits = false) {
             const getalWeergave = forceTwoDigits ? String(waarde).padStart(2, '0') : waarde;
-            // SPATIE TOEGEVOEGD VÓÓR DE LETTER VOOR SCRIPTABLE HERKENNING
-            return `${getalWeergave} <span class="kleine-eenheid">${letter}</span>`;
+            return `${getalWeergave}|${letter}`; // Gebruik een unieke splitter voor Scriptable
         }
 
         function berekenTijdResterend(doelBedrag, actueelBedrag) {
-            if (actueelBedrag <= doelBedrag) return "Bereikt";
+            if (actueelBedrag <= doelBedrag) return "Bereikt|";
             
             const benodigdBedragAflossen = actueelBedrag - doelBedrag;
             const benodigdeMs = benodigdBedragAflossen / AFNAME_PER_MS;
             
             let overgeblevenMs = benodigdeMs;
             
-            const j = Math.floor(overgeblevenMs / MS_PER_JAAR);
-            overgeblevenMs %= MS_PER_JAAR;
-            
-            const m = Math.floor(overgeblevenMs / MS_PER_MAAND);
-            overgeblevenMs %= MS_PER_MAAND;
-            
-            const d = Math.floor(overgeblevenMs / MS_PER_DAG);
-            overgeblevenMs %= MS_PER_DAG;
-            
-            const u = Math.floor(overgeblevenMs / MS_PER_UUR);
-            overgeblevenMs %= MS_PER_UUR;
-
-            const min = Math.floor(overgeblevenMs / MS_PER_MIN);
-            overgeblevenMs %= MS_PER_MIN;
-
+            const j = Math.floor(overgeblevenMs / MS_PER_JAAR); overgeblevenMs %= MS_PER_JAAR;
+            const m = Math.floor(overgeblevenMs / MS_PER_MAAND); overgeblevenMs %= MS_PER_MAAND;
+            const d = Math.floor(overgeblevenMs / MS_PER_DAG); overgeblevenMs %= MS_PER_DAG;
+            const u = Math.floor(overgeblevenMs / MS_PER_UUR); overgeblevenMs %= MS_PER_UUR;
+            const min = Math.floor(overgeblevenMs / MS_PER_MIN); overgeblevenMs %= MS_PER_MIN;
             const sec = Math.floor(overgeblevenMs / MS_PER_SEC);
             
             let output = [];
-            
             if (j > 0) {
-                output.push(formatTijdDeel(j, 'j', false));
-                output.push(formatTijdDeel(m, 'm', true));
-                output.push(formatTijdDeel(d, 'd', true));
-                output.push(formatTijdDeel(u, 'u', true));
+                output.push(formatTijdDeel(j, 'j'), formatTijdDeel(m, 'm', true), formatTijdDeel(d, 'd', true), formatTijdDeel(u, 'u', true));
             } else if (m > 0) {
-                output.push(formatTijdDeel(m, 'm', false));
-                output.push(formatTijdDeel(d, 'd', true));
-                output.push(formatTijdDeel(u, 'u', true));
-                output.push(formatTijdDeel(min, 'm', true));
+                output.push(formatTijdDeel(m, 'm'), formatTijdDeel(d, 'd', true), formatTijdDeel(u, 'u', true), formatTijdDeel(min, 'm', true));
             } else {
-                if (d > 0) output.push(formatTijdDeel(d, 'd', false));
-                output.push(formatTijdDeel(u, 'u', true));
-                output.push(formatTijdDeel(min, 'm', true));
-                output.push(formatTijdDeel(sec, 's', true));
+                if (d > 0) output.push(formatTijdDeel(d, 'd'));
+                output.push(formatTijdDeel(u, 'u', true), formatTijdDeel(min, 'm', true), formatTijdDeel(sec, 's', true));
             }
-            
-            return output.join(" "); // EXTRA SPATIE TUSSEN DE BLOKKEN
+            return output.join(" ");
         }
 
         function updateDashboard() {
@@ -209,45 +148,32 @@
             
             let actueelBedrag = START_BEDRAG - (verstrekenMs * AFNAME_PER_MS);
             if (actueelBedrag < 0) actueelBedrag = 0;
-            document.getElementById('nu').innerHTML = formatValuta(actueelBedrag);
+            splitsEnToonValuta(actueelBedrag, 'nu-c', 'nu-e');
             
-            let schuldHalfJaar = actueelBedrag - ((MS_PER_JAAR / 2) * AFNAME_PER_MS);
-            let schuldJaar = actueelBedrag - (MS_PER_JAAR * AFNAME_PER_MS);
+            splitsEnToonValuta(actueelBedrag - ((MS_PER_JAAR / 2) * AFNAME_PER_MS), 'hj-c', 'hj-e');
+            splitsEnToonValuta(actueelBedrag - (MS_PER_JAAR * AFNAME_PER_MS), 'j-c', 'j-e');
+            splitsEnToonValuta(START_BEDRAG - ((DEC_2026_UNIX_MS - START_UNIX_MS) * AFNAME_PER_MS), 'dec-c', 'dec-e');
             
-            const verstrekenMsDec2026 = DEC_2026_UNIX_MS - START_UNIX_MS;
-            let schuldDec2026 = START_BEDRAG - (verstrekenMsDec2026 * AFNAME_PER_MS);
+            let volgend5kDoel = Math.floor(actueelBedrag / 5000) * 5000; if (volgend5kDoel === actueelBedrag) volgend5kDoel -= 5000;
+            let volgend10kDoel = Math.floor(actueelBedrag / 10000) * 10000; if (volgend10kDoel === actueelBedrag) volgend10kDoel -= 10000;
+            let volgend100kDoel = Math.floor(actueelBedrag / 100000) * 100000; if (volgend100kDoel === actueelBedrag) volgend100kDoel -= 100000;
             
-            document.getElementById('half-jaar').innerHTML = formatValuta(schuldHalfJaar);
-            document.getElementById('jaar').innerHTML = formatValuta(schuldJaar);
-            document.getElementById('dec-2026').innerHTML = formatValuta(schuldDec2026);
-            
-            let volgend5kDoel = Math.floor(actueelBedrag / 5000) * 5000;
-            if (volgend5kDoel === actueelBedrag) volgend5kDoel -= 5000;
-            
-            let volgend10kDoel = Math.floor(actueelBedrag / 10000) * 10000;
-            if (volgend10kDoel === actueelBedrag) volgend10kDoel -= 10000;
-            
-            let volgend100kDoel = Math.floor(actueelBedrag / 100000) * 100000;
-            if (volgend100kDoel === actueelBedrag) volgend100kDoel -= 100000;
-            
-            document.getElementById('next-5k').innerHTML = berekenTijdResterend(volgend5kDoel, actueelBedrag);
-            document.getElementById('next-10k').innerHTML = berekenTijdResterend(volgend10kDoel, actueelBedrag);
-            document.getElementById('next-100k').innerHTML = berekenTijdResterend(volgend100kDoel, actueelBedrag);
-            
-            document.getElementById('tot-1m').innerHTML = berekenTijdResterend(1000000, actueelBedrag);
-            document.getElementById('tot-500k').innerHTML = berekenTijdResterend(500000, actueelBedrag);
-            document.getElementById('tot-0').innerHTML = berekenTijdResterend(0, actueelBedrag);
+            document.getElementById('n5-c').innerText = berekenTijdResterend(volgend5kDoel, actueelBedrag); document.getElementById('n5-e').innerText = "";
+            document.getElementById('n10-c').innerText = berekenTijdResterend(volgend10kDoel, actueelBedrag); document.getElementById('n10-e').innerText = "";
+            document.getElementById('n100-c').innerText = berekenTijdResterend(volgend100kDoel, actueelBedrag); document.getElementById('n100-e').innerText = "";
+            document.getElementById('t1m-c').innerText = berekenTijdResterend(1000000, actueelBedrag); document.getElementById('t1m-e').innerText = "";
+            document.getElementById('t500-c').innerText = berekenTijdResterend(500000, actueelBedrag); document.getElementById('t500-e').innerText = "";
+            document.getElementById('t0-c').innerText = berekenTijdResterend(0, actueelBedrag); document.getElementById('t0-e').innerText = "";
 
             const urenStr = String(cetDatumObj.getHours()).padStart(2, '0');
             const minutenStr = String(cetDatumObj.getMinutes()).padStart(2, '0');
             const secondenStr = String(cetDatumObj.getSeconds()).padStart(2, '0');
-            
-            document.getElementById('updated').innerText = `${urenStr}:${minutenStr}:${secondenStr}`;
+            document.getElementById('up-c').innerText = `${urenStr}:${minutenStr}:${secondenStr}`;
+            document.getElementById('up-e').innerText = "";
         }
 
         updateDashboard();
         setInterval(updateDashboard, 1000);
     </script>
-
 </body>
 </html>
