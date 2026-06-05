@@ -76,7 +76,7 @@
             </tr>
             <tr>
                 <td class="label">🏃 Stappen</td>
-                <td id="stappen-teller" class="waarde">6420</td>
+                <td id="stappen-teller" class="waarde">6.420</td>
             </tr>
             <tr>
                 <td class="label">☕ Koffie consumptie</td>
@@ -90,20 +90,21 @@
     </table>
 
     <script>
-        // Startwaarde voor de stappen
-        let stappen = 6420;
-
-        function telAft() {
-            if (stappen > 0) {
-                stappen--; // Trek er 1 stap af
-                
-                // Formatteer het getal netjes met duizendtallen (bijv. 6.419)
-                document.getElementById("stappen-teller").innerText = stappen.toLocaleString('nl-NL');
-            }
+        function updateStappen() {
+            // Bereken een willekeurig heel getal tussen 1.000 en 1.000.000
+            const min = 1000;
+            const max = 1000000;
+            const randomStappen = Math.floor(Math.random() * (max - min + 1)) + min;
+            
+            // Toon het getal met Nederlandse duizendtal-punten (bijv. 842.105)
+            document.getElementById("stappen-teller").innerText = randomStappen.toLocaleString('nl-NL');
         }
 
-        // Voer de functie elke 1000 milliseconden (1 seconde) uit
-        setInterval(telAft, 1000);
+        // Voer de functie direct uit bij het laden van de pagina
+        updateStappen();
+
+        // Herhaal de functie elke 1000 milliseconden (1 seconde)
+        setInterval(updateStappen, 1000);
     </script>
 
 </body>
