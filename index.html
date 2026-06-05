@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypotheek Dashboard</title>
+    <title>Hypotheek Dashboard v2</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -19,7 +19,7 @@
         }
         table {
             width: 100%;
-            max-width: 290px; /* Horizontaal compacter gemaakt (was 360px) */
+            max-width: 290px;
             border-collapse: collapse;
             background-color: #2c2c2e;
             border-radius: 12px;
@@ -27,7 +27,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
         td {
-            padding: 8px 12px; /* Iets minder padding voor een compactere look */
+            padding: 8px 12px;
             text-align: left;
             font-size: 0.85rem;
             border-bottom: 1px solid #3a3a3c;
@@ -38,7 +38,7 @@
         .label {
             color: #eaeaea;
             font-weight: 500;
-            white-space: nowrap; /* Zorgt dat labels op 1 regel blijven */
+            white-space: nowrap;
         }
         .waarde {
             color: #ffffff;
@@ -48,18 +48,22 @@
             white-space: nowrap;
         }
         .highlight {
-            color: #30d158; /* iOS Systeemgroen behouden */
+            color: #30d158; /* iOS Groen voor Nu */
         }
-        .countdown {
-            color: #ff9f0a; /* Oranje voor de resterende tijden */
-            font-size: 0.8rem;
+        .update-tekst {
+            color: #8e8e93; /* iOS Grijs voor de tijdstempel */
+            font-weight: normal;
         }
-        /* Maakt het 'kr' symbool kleiner */
-        .valuta-symbool {
+        /* Stijl voor kleine eenheden zoals kr, j, m, d, u, s */
+        .kleine-eenheid {
             font-size: 0.7rem;
             font-weight: normal;
-            margin-left: 2px;
+            margin-left: 1px;
+            margin-right: 3px;
             color: #aaaaaa;
+        }
+        .kleine-eenheid:last-child {
+            margin-right: 0;
         }
     </style>
 </head>
@@ -85,27 +89,31 @@
             </tr>
             <tr>
                 <td class="label">Next 5K</td>
-                <td id="next-5k" class="waarde countdown">Laden...</td>
+                <td id="next-5k" class="waarde">Laden...</td>
             </tr>
             <tr>
                 <td class="label">Next 10K</td>
-                <td id="next-10k" class="waarde countdown">Laden...</td>
+                <td id="next-10k" class="waarde">Laden...</td>
             </tr>
             <tr>
                 <td class="label">Next 100K</td>
-                <td id="next-100k" class="waarde countdown">Laden...</td>
+                <td id="next-100k" class="waarde">Laden...</td>
             </tr>
             <tr>
                 <td class="label">Tot 1M</td>
-                <td id="tot-1m" class="waarde countdown">Laden...</td>
+                <td id="tot-1m" class="waarde">Laden...</td>
             </tr>
             <tr>
                 <td class="label">Tot 500K</td>
-                <td id="tot-500k" class="waarde countdown">Laden...</td>
+                <td id="tot-500k" class="waarde">Laden...</td>
             </tr>
             <tr>
                 <td class="label">Tot 0</td>
-                <td id="tot-0" class="waarde countdown">Laden...</td>
+                <td id="tot-0" class="waarde">Laden...</td>
+            </tr>
+            <tr>
+                <td class="label">Updated</td>
+                <td id="updated" class="waarde update-tekst">Laden...</td>
             </tr>
         </tbody>
     </table>
@@ -125,26 +133,28 @@
         const MS_PER_JAAR = 365.25 * MS_PER_DAG;
         const AFNAME_PER_MS = AFNAME_PER_MAAND / MS_PER_MAAND;
 
-        // Vaste datum voor 28 December 2026 23:00:00 CET
         const DEC_2026_UNIX_MS = new Date("2026-12-28T23:00:00+01:00").getTime();
 
-        function getHuidigeTijdInCetMs() {
+        function getHuidigeTijdInCetObj() {
             const nu = new Date();
             const cetTekst = nu.toLocaleString("en-US", { timeZone: "Europe/Stockholm" });
-            return new Date(cetTekst).getTime();
+            return new Date(cetTekst);
         }
 
-        // Formatteert getallen op z'n Nederlands, met een kleine 'kr' erachter
         function formatValuta(bedrag) {
             if (bedrag < 0) bedrag = 0;
             const geformatteerdGetal = bedrag.toLocaleString('nl-NL', { 
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2 
             });
-            return `${geformatteerdGetal}<span class="valuta-symbool">kr</span>`;
+            return `${geformatteerdGetal}<span class="kleine-eenheid">kr</span>`;
         }
 
-        // Berekent de resterende tijd inclusief minuten en seconden
+        // Berekent tijdsduur en verpakt de eenheidletters in een kleine span
+        function formatTijdDeel(waarde, letter) {
+            return `${waarde}<span class="kleine-eenheid">${letter}</span>`;
+        }
+
         function berekenTijdResterend(doelBedrag, actueelBedrag) {
             if (actueelBedrag <= doelBedrag) return "Bereikt";
             
@@ -171,26 +181,28 @@
             const seconden = Math.floor(overgeblevenMs / MS_PER_SEC);
             
             let output = [];
-            if (jaren > 0) output.push(`${jaren}j`);
-            if (maanden > 0 || jaren > 0) output.push(`${maanden}m`);
-            if (dagen > 0 || maanden > 0 || jaren > 0) output.push(`${dagen}d`);
+            if (jaren > 0) output.push(formatTijdDeel(jaren, 'j'));
+            if (maanden > 0 || jaren > 0) output.push(formatTijdDeel(maanden, 'm'));
+            if (dagen > 0 || maanden > 0 || jaren > 0) output.push(formatTijdDeel(dagen, 'd'));
             
-            // Uren, minuten en seconden tonen we altijd als actieve live-ticker
-            output.push(`${uren}u ${minuten}m ${seconden}s`);
+            output.push(formatTijdDeel(uren, 'u'));
+            output.push(formatTijdDeel(minuten, 'm'));
+            output.push(formatTijdDeel(seconden, 's'));
             
-            return output.join(" ");
+            return output.join("");
         }
 
         function updateDashboard() {
-            const nuCetMs = getHuidigeTijdInCetMs(); 
+            const cetDatumObj = getHuidigeTijdInCetObj();
+            const nuCetMs = cetDatumObj.getTime(); 
             const verstrekenMs = nuCetMs - START_UNIX_MS;
             
-            // 1. NU stand berekenen
+            // 1. NU stand
             let actueelBedrag = START_BEDRAG - (verstrekenMs * AFNAME_PER_MS);
             if (actueelBedrag < 0) actueelBedrag = 0;
             document.getElementById('nu').innerHTML = formatValuta(actueelBedrag);
             
-            // 2. Toekomstige vaste schattingen
+            // 2. Toekomstige schattingen
             let schuldHalfJaar = actueelBedrag - ((MS_PER_JAAR / 2) * AFNAME_PER_MS);
             let schuldJaar = actueelBedrag - (MS_PER_JAAR * AFNAME_PER_MS);
             
@@ -201,7 +213,7 @@
             document.getElementById('jaar').innerHTML = formatValuta(schuldJaar);
             document.getElementById('dec-2026').innerHTML = formatValuta(schuldDec2026);
             
-            // 3. Resterende tijd naar milestones berekenen
+            // 3. Resterende milestones
             let volgend5kDoel = Math.floor(actueelBedrag / 5000) * 5000;
             if (volgend5kDoel === actueelBedrag) volgend5kDoel -= 5000;
             
@@ -211,17 +223,25 @@
             let volgend100kDoel = Math.floor(actueelBedrag / 100000) * 100000;
             if (volgend100kDoel === actueelBedrag) volgend100kDoel -= 100000;
             
-            document.getElementById('next-5k').innerText = berekenTijdResterend(volgend5kDoel, actueelBedrag);
-            document.getElementById('next-10k').innerText = berekenTijdResterend(volgend10kDoel, actueelBedrag);
-            document.getElementById('next-100k').innerText = berekenTijdResterend(volgend100kDoel, actueelBedrag);
+            document.getElementById('next-5k').innerHTML = berekenTijdResterend(volgend5kDoel, actueelBedrag);
+            document.getElementById('next-10k').innerHTML = berekenTijdResterend(volgend10kDoel, actueelBedrag);
+            document.getElementById('next-100k').innerHTML = berekenTijdResterend(volgend100kDoel, actueelBedrag);
             
-            // Vaste milestones
-            document.getElementById('tot-1m').innerText = berekenTijdResterend(1000000, actueelBedrag);
-            document.getElementById('tot-500k').innerText = berekenTijdResterend(500000, actueelBedrag);
-            document.getElementById('tot-0').innerText = berekenTijdResterend(0, actueelBedrag);
+            document.getElementById('tot-1m').innerHTML = berekenTijdResterend(1000000, actueelBedrag);
+            document.getElementById('tot-500k').innerHTML = berekenTijdResterend(500000, actueelBedrag);
+            document.getElementById('tot-0').innerHTML = berekenTijdResterend(0, actueelBedrag);
+
+            // 4. Updated tijdstempel in Nederlands/CET formaat (bijv. 05-06-2026 13:45:12)
+            const dag = String(cetDatumObj.getDate()).padStart(2, '0');
+            const maand = String(cetDatumObj.getMonth() + 1).padStart(2, '0');
+            const jaarStr = cetDatumObj.getFullYear();
+            const uren = String(cetDatumObj.getHours()).padStart(2, '0');
+            const minuten = String(cetDatumObj.getMinutes()).padStart(2, '0');
+            const seconden = String(cetDatumObj.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('updated').innerText = `${dag}-${maand}-${jaarStr} ${uren}:${minuten}:${seconden}`;
         }
 
-        // Direct laden en elke seconde herhalen
         updateDashboard();
         setInterval(updateDashboard, 1000);
     </script>
