@@ -59,9 +59,9 @@ if (tabelData.length === 0) {
     rijStack.layoutHorizontally()
     rijStack.centerAlignContent()
     
-    // Labels een slagje kleiner (fontSize 10.5) en altijd in het grijs (#8e8e93)
+    // Labels een slagje kleiner (fontSize 9.5) en altijd in het grijs (#8e8e93)
     let labelTekst = rijStack.addText(item.label)
-    labelTekst.fontSize = 10.5
+    labelTekst.fontSize = 9.5
     labelTekst.textColor = new Color("#8e8e93")
     labelTekst.lineLimit = 1
     
@@ -74,7 +74,7 @@ if (tabelData.length === 0) {
     // Bepaal de hoofdkleur van de tekst (Rij 0 = groen, de rest is grijs)
     let tekstKleur = (index === 0) ? new Color("#30d158") : new Color("#8e8e93");
     
-    // De RegEx matcht zowel kleine letters als hoofdletters (a-zA-Z) om ook 'Kr' te herkennen
+    // Splits de cijfers en letters (zoals Kr, j, m, d, u, s)
     let onderdelen = item.waarde.match(/([0-9.,:]+|[a-zA-Z]+)/g) || [item.waarde];
     
     onderdelen.forEach((deel, deelIndex) => {
@@ -84,17 +84,23 @@ if (tabelData.length === 0) {
       tekstElement.lineLimit = 1
       
       if (isLetter) {
-        // Zowel duration eenheden als 'Kr'/'kr' worden nu 8.5 groot gemaakt
-        tekstElement.fontSize = 8.5
+        // De eenheden/letters nóg een slagje kleiner (fontSize 7.5)
+        tekstElement.fontSize = 7.5
         tekstElement.fontWeight = "normal"
-        tekstElement.textColor = new Color("#aaaaaa") 
         
-        // Voeg ruimte toe tussen de eenheden indien van toepassing
+        // Op de 'Nu' rij (index 0) kleurt de 'Kr' eenheid groen, anders grijs (#aaaaaa)
+        if (index === 0) {
+          tekstElement.textColor = new Color("#30d158") 
+        } else {
+          tekstElement.textColor = new Color("#aaaaaa") 
+        }
+        
+        // Ruimte toevoegen tussen de eenheden
         if (deelIndex < onderdelen.length - 1) {
           waardeStack.addSpacer(4) 
         }
       } else {
-        // De getallen zelf behouden hun grotere, dikgedrukte formaat (fontSize 13)
+        // De cijfers zelf blijven lekker groot en dikgedrukt (fontSize 13)
         tekstElement.fontSize = 13
         tekstElement.fontWeight = "bold"
         tekstElement.textColor = tekstKleur
