@@ -89,8 +89,8 @@
                 <td id="dec-2026" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Next 5K</td>
-                <td id="next-5k" class="waarde">Laden...</td>
+                <td class="label">Next 1K</td>
+                <td id="next-1k" class="waarde">Laden...</td>
             </tr>
             <tr>
                 <td class="label">Next 10K</td>
@@ -220,8 +220,8 @@
             document.getElementById('jaar').innerHTML = formatValuta(schuldJaar);
             document.getElementById('dec-2026').innerHTML = formatValuta(schuldDec2026);
             
-            let volgend5kDoel = Math.floor(actueelBedrag / 5000) * 5000;
-            if (volgend5kDoel === actueelBedrag) volgend5kDoel -= 5000;
+            let volgend1kDoel = Math.floor(actueelBedrag / 1000) * 1000;
+            if (volgend1kDoel === actueelBedrag) volgend1kDoel -= 1000;
             
             let volgend10kDoel = Math.floor(actueelBedrag / 10000) * 10000;
             if (volgend10kDoel === actueelBedrag) volgend10kDoel -= 10000;
@@ -229,7 +229,7 @@
             let volgend100kDoel = Math.floor(actueelBedrag / 100000) * 100000;
             if (volgend100kDoel === actueelBedrag) volgend100kDoel -= 100000;
             
-            document.getElementById('next-5k').innerHTML = berekenTijdResterend(volgend5kDoel, actueelBedrag);
+            document.getElementById('next-1k').innerHTML = berekenTijdResterend(volgend1kDoel, actueelBedrag);
             document.getElementById('next-10k').innerHTML = berekenTijdResterend(volgend10kDoel, actueelBedrag);
             document.getElementById('next-100k').innerHTML = berekenTijdResterend(volgend100kDoel, actueelBedrag);
             
