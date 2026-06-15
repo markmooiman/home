@@ -73,43 +73,43 @@
     <table>
         <tbody>
             <tr>
-                <td class="label">Nu</td>
+                <td id="label-nu" class="label">Nu</td>
                 <td id="nu" class="waarde highlight">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Half Jaar</td>
+                <td id="label-half-jaar" class="label">Half Jaar</td>
                 <td id="half-jaar" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Jaar</td>
+                <td id="label-jaar" class="label">Jaar</td>
                 <td id="jaar" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">28 December 2026</td>
+                <td class="label">Verlengdatum (28 Dec)</td>
                 <td id="dec-2026" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Next 1K</td>
+                <td id="label-next-1k" class="label">Next 1K</td>
                 <td id="next-1k" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Next 10K</td>
+                <td id="label-next-10k" class="label">Next 10K</td>
                 <td id="next-10k" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Next 100K</td>
+                <td id="label-next-100k" class="label">Next 100K</td>
                 <td id="next-100k" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Tot 1M</td>
+                <td id="label-tot-1m" class="label">Tot 1M</td>
                 <td id="tot-1m" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Tot 679K</td>
+                <td id="label-tot-679k" class="label">Tot 679K</td>
                 <td id="tot-679k" class="waarde">Laden...</td>
             </tr>
             <tr>
-                <td class="label">Tot 0</td>
+                <td id="label-tot-0" class="label">Tot 0</td>
                 <td id="tot-0" class="waarde">Laden...</td>
             </tr>
             <tr>
@@ -119,11 +119,14 @@
         </tbody>
     </table>
 
+
     <script>
+        // Constanten
         const START_BEDRAG = 1258000; 
         const AFNAME_PER_MAAND = 15000;
         const START_UNIX_MS = 1769551200000; 
-
+    
+        // Tijd omrekeningen
         const MS_PER_SEC = 1000;
         const MS_PER_MIN = 60 * MS_PER_SEC;
         const MS_PER_UUR = 60 * MS_PER_MIN;
@@ -131,15 +134,13 @@
         const MS_PER_MAAND = 30.4375 * MS_PER_DAG;
         const MS_PER_JAAR = 365.25 * MS_PER_DAG;
         const AFNAME_PER_MS = AFNAME_PER_MAAND / MS_PER_MAAND;
-
+    
         const DEC_2026_UNIX_MS = new Date("2026-12-28T23:00:00+01:00").getTime();
-
-        function getHuidigeTijdInCetObj() {
-            const nu = new Date();
-            const cetTekst = nu.toLocaleString("en-US", { timeZone: "Europe/Stockholm" });
-            return new Date(cetTekst);
-        }
-
+    
+        // Datumnotatie formatters (Nederlandse maanden)
+        const formatterKort = new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: 'short' });
+        const formatterLang = new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: 'short', year: '2-digit' });
+    
         function formatValuta(bedrag) {
             if (bedrag < 0) bedrag = 0;
             const geformatteerdGetal = bedrag.toLocaleString('nl-NL', { 
@@ -148,24 +149,28 @@
             });
             return `${geformatteerdGetal}<span class="kleine-eenheid">Kr</span>`;
         }
-
+    
         function formatTijdDeel(waarde, letter, forceTwoDigits = false) {
             const getalWeergave = forceTwoDigits ? String(waarde).padStart(2, '0') : waarde;
             return `${getalWeergave}<span class="kleine-eenheid">${letter}</span>`;
         }
-
-        function berekenTijdResterend(doelBedrag, actueelBedrag) {
-            if (actueelBedrag <= doelBedrag) return "Bereikt";
-            
+    
+        // Verkrijg de ms resterend tot een doelbedrag
+        function pakMsTotDoel(doelBedrag, actueelBedrag) {
+            if (actueelBedrag <= doelBedrag) return 0;
             const benodigdBedragAflossen = actueelBedrag - doelBedrag;
-            const benodigdeMs = benodigdBedragAflossen / AFNAME_PER_MS;
+            return benodigdBedragAflossen / AFNAME_PER_MS;
+        }
+    
+        function berekenTijdResterendVanMs(benodigdeMs) {
+            if (benodigdeMs <= 0) return "Bereikt";
             
             let overgeblevenMs = benodigdeMs;
             
             const j = Math.floor(overgeblevenMs / MS_PER_JAAR);
             overgeblevenMs %= MS_PER_JAAR;
             
-            const m = Math.floor(overgeblevenMs / MS_PER_MAAND);
+            const ma = Math.floor(overgeblevenMs / MS_PER_MAAND);
             overgeblevenMs %= MS_PER_MAAND;
             
             const d = Math.floor(overgeblevenMs / MS_PER_DAG);
@@ -173,21 +178,21 @@
             
             const u = Math.floor(overgeblevenMs / MS_PER_UUR);
             overgeblevenMs %= MS_PER_UUR;
-
+    
             const min = Math.floor(overgeblevenMs / MS_PER_MIN);
             overgeblevenMs %= MS_PER_MIN;
-
+    
             const sec = Math.floor(overgeblevenMs / MS_PER_SEC);
             
             let output = [];
             
             if (j > 0) {
                 output.push(formatTijdDeel(j, 'j', false));
-                output.push(formatTijdDeel(m, 'm', true));
+                output.push(formatTijdDeel(ma, 'ma', true));
                 output.push(formatTijdDeel(d, 'd', true));
                 output.push(formatTijdDeel(u, 'u', true));
-            } else if (m > 0) {
-                output.push(formatTijdDeel(m, 'm', false));
+            } else if (ma > 0) {
+                output.push(formatTijdDeel(ma, 'ma', false));
                 output.push(formatTijdDeel(d, 'd', true));
                 output.push(formatTijdDeel(u, 'u', true));
                 output.push(formatTijdDeel(min, 'm', true));
@@ -198,18 +203,25 @@
                 output.push(formatTijdDeel(sec, 's', true));
             }
             
-            return output.join("");
+            return output.join(" ");
         }
-
+    
         function updateDashboard() {
-            const cetDatumObj = getHuidigeTijdInCetObj();
-            const nuCetMs = cetDatumObj.getTime(); 
-            const verstrekenMs = nuCetMs - START_UNIX_MS;
+            const nuMs = Date.now(); 
+            const verstrekenMs = nuMs - START_UNIX_MS;
             
+            // Actueel bedrag
             let actueelBedrag = START_BEDRAG - (verstrekenMs * AFNAME_PER_MS);
             if (actueelBedrag < 0) actueelBedrag = 0;
             document.getElementById('nu').innerHTML = formatValuta(actueelBedrag);
             
+            // Statische tijdsdoelen vanaf NU gezien
+            const datumHalfJaar = new Date(nuMs + (MS_PER_JAAR / 2));
+            const datumJaar = new Date(nuMs + MS_PER_JAAR);
+            
+            document.getElementById('label-half-jaar').innerText = `Half Jaar (${formatterKort.format(datumHalfJaar)})`;
+            document.getElementById('label-jaar').innerText = `Jaar (${formatterKort.format(datumJaar)})`;
+    
             let schuldHalfJaar = actueelBedrag - ((MS_PER_JAAR / 2) * AFNAME_PER_MS);
             let schuldJaar = actueelBedrag - (MS_PER_JAAR * AFNAME_PER_MS);
             
@@ -220,6 +232,7 @@
             document.getElementById('jaar').innerHTML = formatValuta(schuldJaar);
             document.getElementById('dec-2026').innerHTML = formatValuta(schuldDec2026);
             
+            // Mijlpalen berekenen
             let volgend1kDoel = Math.floor(actueelBedrag / 1000) * 1000;
             if (volgend1kDoel === actueelBedrag) volgend1kDoel -= 1000;
             
@@ -229,21 +242,39 @@
             let volgend100kDoel = Math.floor(actueelBedrag / 100000) * 100000;
             if (volgend100kDoel === actueelBedrag) volgend100kDoel -= 100000;
             
-            document.getElementById('next-1k').innerHTML = berekenTijdResterend(volgend1kDoel, actueelBedrag);
-            document.getElementById('next-10k').innerHTML = berekenTijdResterend(volgend10kDoel, actueelBedrag);
-            document.getElementById('next-100k').innerHTML = berekenTijdResterend(volgend100kDoel, actueelBedrag);
+            // Milliseconden tot doelen berekenen
+            const msTot1k = pakMsTotDoel(volgend1kDoel, actueelBedrag);
+            const msTot10k = pakMsTotDoel(volgend10kDoel, actueelBedrag);
+            const msTot100k = pakMsTotDoel(volgend100kDoel, actueelBedrag);
+            const msTot1m = pakMsTotDoel(1000000, actueelBedrag);
+            const msTot679k = pakMsTotDoel(679000, actueelBedrag);
+            const msTot0 = pakMsTotDoel(0, actueelBedrag);
+    
+            // Labels dynamisch updaten met de verwachte datum
+            document.getElementById('label-next-1k').innerText = `Next 1K (${formatterKort.format(new Date(nuMs + msTot1k))})`;
+            document.getElementById('label-next-10k').innerText = `Next 10K (${formatterKort.format(new Date(nuMs + msTot10k))})`;
+            document.getElementById('label-next-100k').innerText = `Next 100K (${formatterKort.format(new Date(nuMs + msTot100k))})`;
             
-            document.getElementById('tot-1m').innerHTML = berekenTijdResterend(1000000, actueelBedrag);
-            document.getElementById('tot-679k').innerHTML = berekenTijdResterend(679000, actueelBedrag);
-            document.getElementById('tot-0').innerHTML = berekenTijdResterend(0, actueelBedrag);
-
-            const urenStr = String(cetDatumObj.getHours()).padStart(2, '0');
-            const minutenStr = String(cetDatumObj.getMinutes()).padStart(2, '0');
-            const secondenStr = String(cetDatumObj.getSeconds()).padStart(2, '0');
-            
+            document.getElementById('label-tot-1m').innerText = `Tot 1M (${formatterLang.format(new Date(nuMs + msTot1m))})`;
+            document.getElementById('label-tot-679k').innerText = `Tot 679K (${formatterLang.format(new Date(nuMs + msTot679k))})`;
+            document.getElementById('label-tot-0').innerText = `Tot 0 (${formatterLang.format(new Date(nuMs + msTot0))})`;
+    
+            // Waarden invullen
+            document.getElementById('next-1k').innerHTML = berekenTijdResterendVanMs(msTot1k);
+            document.getElementById('next-10k').innerHTML = berekenTijdResterendVanMs(msTot10k);
+            document.getElementById('next-100k').innerHTML = berekenTijdResterendVanMs(msTot100k);
+            document.getElementById('tot-1m').innerHTML = berekenTijdResterendVanMs(msTot1m);
+            document.getElementById('tot-679k').innerHTML = berekenTijdResterendVanMs(msTot679k);
+            document.getElementById('tot-0').innerHTML = berekenTijdResterendVanMs(msTot0);
+    
+            // Klok bijwerken
+            const nuKladaf = new Date();
+            const urenStr = String(nuKladaf.getHours()).padStart(2, '0');
+            const minutenStr = String(nuKladaf.getMinutes()).padStart(2, '0');
+            const secondenStr = String(nuKladaf.getSeconds()).padStart(2, '0');
             document.getElementById('updated').innerText = `${urenStr}:${minutenStr}:${secondenStr}`;
         }
-
+    
         updateDashboard();
         setInterval(updateDashboard, 1000);
     </script>
