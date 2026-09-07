@@ -69,7 +69,6 @@
     </style>
 </head>
 <body>
-
     <table>
         <tbody>
             <tr>
@@ -113,18 +112,21 @@
                 <td id="tot-0" class="waarde">Laden...</td>
             </tr>
             <tr>
+                <td id="label-leningsgraad" class="label">Leningsgraad</td>
+                <td id="leningsgraad" class="waarde">Laden...</td>
+            </tr>
+            <tr>
                 <td class="label">Updated</td>
                 <td id="updated" class="waarde">Laden...</td>
             </tr>
         </tbody>
     </table>
-
-
     <script>
         // Constanten
         const START_BEDRAG = 1258000; 
         const AFNAME_PER_MAAND = 15000;
         const START_UNIX_MS = 1769551200000; 
+        const MAX_BEDRAG = 2600000;
     
         // Tijd omrekeningen
         const MS_PER_SEC = 1000;
@@ -148,6 +150,15 @@
                 maximumFractionDigits: 2 
             });
             return `${geformatteerdGetal}<span class="kleine-eenheid">Kr</span>`;
+        }
+    
+        function formatPercentage(percentage) {
+            if (percentage < 0) percentage = 0;
+            const geformatteerdGetal = percentage.toLocaleString('nl-NL', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+            return `${geformatteerdGetal}<span class="kleine-eenheid">%</span>`;
         }
     
         function formatTijdDeel(waarde, letter, forceTwoDigits = false) {
@@ -215,6 +226,10 @@
             if (actueelBedrag < 0) actueelBedrag = 0;
             document.getElementById('nu').innerHTML = formatValuta(actueelBedrag);
             
+            // Leningsgraad
+            const leningsgraad = (actueelBedrag / MAX_BEDRAG) * 100;
+            document.getElementById('leningsgraad').innerHTML = formatPercentage(leningsgraad);
+            
             // Statische tijdsdoelen vanaf NU gezien
             const datumHalfJaar = new Date(nuMs + (MS_PER_JAAR / 2));
             const datumJaar = new Date(nuMs + MS_PER_JAAR);
@@ -278,6 +293,5 @@
         updateDashboard();
         setInterval(updateDashboard, 1000);
     </script>
-
 </body>
 </html>
