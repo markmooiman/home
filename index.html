@@ -155,8 +155,8 @@
         function formatPercentage(percentage) {
             if (percentage < 0) percentage = 0;
             const geformatteerdGetal = percentage.toLocaleString('nl-NL', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
+                minimumFractionDigits: 4, 
+                maximumFractionDigits: 4 
             });
             return `${geformatteerdGetal}<span class="kleine-eenheid">%</span>`;
         }
